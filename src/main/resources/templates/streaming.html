@@ -1,18 +1,43 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Risposta in Tempo Reale</title>
+    <title>Real-Time Response with Typing Effect</title>
     <meta charset="UTF-8" />
+    <style>
+        #response {
+            width: 100%;
+            height: 300px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+    </style>
     <script>
         const eventSource = new EventSource('/streamResponse');
+        let fullResponse = '';
+        let currentIndex = 0;
+
         eventSource.onmessage = function(event) {
-            const responseElement = document.getElementById('response');
-            responseElement.textContent += event.data;
+            const data = JSON.parse(event.data);
+            if (data.response) {
+                fullResponse += data.response;
+            }
         };
+
+        function typeEffect() {
+            const responseElement = document.getElementById('response');
+            if (currentIndex < fullResponse.length) {
+                responseElement.value += fullResponse.charAt(currentIndex);
+                currentIndex++;
+            }
+        }
+
+        setInterval(typeEffect, 50); // Adjust the speed of the typing effect
     </script>
 </head>
 <body>
-    <h1>Risposta in Tempo Reale</h1>
-    <pre id="response"></pre>
+    <h1>Real-Time Response with Typing Effect</h1>
+    <textarea id="response" readonly></textarea>
 </body>
 </html>
