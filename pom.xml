@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
+    <groupId>com.rox</groupId>
     <artifactId>llama-app</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>llama-app</name>
-    <description>Applicazione Spring Boot per interagire con Ollama</description>
+    <description>Basic Ollama Interface</description>
     <packaging>jar</packaging>
 
     <properties>

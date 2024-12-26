@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.rox.docguru;
 
 public class Payload {
     private String prompt;
