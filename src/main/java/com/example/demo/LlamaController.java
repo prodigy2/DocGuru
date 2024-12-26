@@ -3,15 +3,11 @@ package com.example.demo;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import reactor.core.publisher.Flux;
-
-import com.example.demo.Prompt;
 
 @Controller
 public class LlamaController {
@@ -25,22 +21,13 @@ public class LlamaController {
             .build();
     }
 
-    @GetMapping("/")
-    public String showForm(Model model) {
-        model.addAttribute("prompt", new Prompt());
-        return "index";
-    }
+   
 
-    @PostMapping("/sendPrompt")
-    public String sendPrompt(@ModelAttribute Prompt prompt, Model model) {
-        model.addAttribute("prompt", prompt);
-        return "streaming";
-    }
-
-    @GetMapping(value = "/streamResponse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(value = "/streamResponse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseBody
-    public Flux<String> streamResponse(@ModelAttribute Prompt prompt) {
-        return callOllamaApi(prompt.getText());
+    public Flux<String> streamResponse(@RequestBody Payload payload) {
+        System.out.println("Received payload: " + payload.getPrompt());
+        return callOllamaApi(payload.getPrompt());
     }
 
     private Flux<String> callOllamaApi(String promptText) {

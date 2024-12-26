@@ -1,15 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Interfaccia Llama 3</title>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private AI - Chat Interface</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #chatContainer {
+            width: 60%;
+            max-width: 800px;
+            min-width: 300px;
+            border: 1px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #111;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1px solid #0f0;
+            border-radius: 8px;
+            background-color: #000;
+            color: #0f0;
+            font-family: monospace;
+            resize: none;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #promptInput {
+            height: 50px;
+            margin-bottom: 10px;
+        }
+
+        #chatHistory {
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #0f0;
+            border-radius: 8px;
+            background-color: #000;
+            color: #0f0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #090;
+        }
+    </style>
 </head>
 <body>
-    <h1>Interagisci con Llama 3</h1>
-    <form action="/sendPrompt" method="post">
-        <label for="prompt">Inserisci il prompt:</label>
-        <input type="text" id="prompt" name="prompt" required />
-        <button type="submit">Invia</button>
-    </form>
+    <div id="chatContainer">
+        <h1>Private AI - Chat Interface</h1>
+        <div id="chatHistory"></div>
+        <textarea id="promptInput" rows="2" placeholder="Type your prompt here..."></textarea>
+        <button id="sendPromptButton">Send Prompt</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const promptInput = document.getElementById('promptInput');
+            const sendPromptButton = document.getElementById('sendPromptButton');
+            const chatHistory = document.getElementById('chatHistory');
+
+            // Send the prompt to the server when the button is clicked
+            sendPromptButton.addEventListener('click', function () {
+                const prompt = promptInput.value.trim();
+
+                // Ensure the prompt is not empty
+                if (!prompt) {
+                    alert("Prompt cannot be empty!");
+                    return;
+                }
+
+                // Append the user's prompt to the chat history
+                chatHistory.innerHTML += `\n> ${prompt}\n`;
+                promptInput.value = ''; // Clear the input
+
+                // Prepare the payload as JSON
+                const payload = { prompt };
+
+                // Make a POST request for streaming
+                fetch('/streamResponse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let partialResponse = ''; // Collect response chunks
+
+                    function processStream({ done, value }) {
+                        if (done) return;
+
+                        // Decode the chunk of data
+                        const chunk = decoder.decode(value, { stream: true });
+
+                        // Parse and append the `response` field from the JSON
+                        const lines = chunk.split("\n").filter(line => line.trim().startsWith("data:"));
+                        lines.forEach(line => {
+                            try {
+                                const json = JSON.parse(line.replace("data:", "").trim());
+                                if (json.response) {
+                                    partialResponse += json.response;
+                                    chatHistory.innerHTML += `${json.response}`; // Append response
+                                    chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+                                }
+                            } catch (e) {
+                                console.error("Error parsing JSON:", e);
+                            }
+                        });
+
+                        // Continue reading the stream
+                        reader.read().then(processStream);
+                    }
+
+                    // Start reading the stream
+                    reader.read().then(processStream);
+                })
+                .catch(error => {
+                    chatHistory.innerHTML += `\n[Error]: ${error.message}\n`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                    console.error('Error during response streaming:', error);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

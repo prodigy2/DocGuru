@@ -3,10 +3,33 @@
 <head>
     <title>Errore</title>
     <meta charset="UTF-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .error-container {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #721c24;
+        }
+        a {
+            text-decoration: none;
+            color: #004085;
+        }
+    </style>
 </head>
 <body>
-    <h1>Si è verificato un errore!</h1>
-    <h2>Il nostro team sta lavorando per risolverlo.</h2>
-    <a href="/">Torna alla home</a>
+    <div class="error-container">
+        <h1>Si è verificato un errore!</h1>
+        <h2 th:text="'Tipo di errore: ' + ${errorType}"></h2>
+        <p th:text="'Dettagli: ' + ${errorMessage}"></p>
+        <a href="/">Torna alla home</a>
+    </div>
 </body>
 </html>
