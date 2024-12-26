@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Risposta in Tempo Reale</title>
+    <meta charset="UTF-8" />
+    <script>
+        const eventSource = new EventSource('/streamResponse');
+        eventSource.onmessage = function(event) {
+            const responseElement = document.getElementById('response');
+            responseElement.textContent += event.data;
+        };
+    </script>
+</head>
+<body>
+    <h1>Risposta in Tempo Reale</h1>
+    <pre id="response"></pre>
+</body>
+</html>
